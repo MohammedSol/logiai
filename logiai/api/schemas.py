@@ -11,6 +11,12 @@ class Livraison(BaseModel):
 
     # Le premier champ est donné. À VOUS : écrire les 6 autres, avec des bornes réalistes.
     distance_km: float = Field(ge=1, le=1000, description="Distance du trajet (km)")
+    poids_kg: float = Field(ge=1, le=40000, description="Poids transporté en kg")
+    heure_depart: int = Field(ge=0, le=23, description="Heure de départ (0 à 23)")
+    pluie_mm: float = Field(ge=0, le=200, description="Pluie prévue sur le trajet (mm)")
+    trafic_index: float = Field(ge=0, le=10, description="Index de trafic, de 0 (fluide) à 10 (saturé)")
+    nb_arrets: int = Field(ge=0, le=50, description="Nombre d'arrêts de livraison")
+    type_vehicule: Literal["moto", "fourgon", "camion"] = Field(description="Type de véhicule (moto, fourgon ou camion)")
     # poids_kg        : float  (kg)
     # heure_depart    : int    (0 à 23)
     # pluie_mm        : float  (mm)

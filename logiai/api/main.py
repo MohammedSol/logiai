@@ -1,7 +1,7 @@
 """L'API LogiAI : python -m uvicorn logiai.api.main:app --reload"""
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 
 from logiai.api.schemas import Livraison, PredictionOut
 from logiai.config import MODEL_PATH
@@ -32,10 +32,19 @@ def health():
     return {"status": "ok", "model_loaded": "predictor" in state}
 
 
-@app.post("/v1/predict", response_model=PredictionOut)
-def predict(livraison: Livraison):
+#@app.post("/v1/predict", response_model=PredictionOut)
+#def predict(livraison: Livraison):
     # À VOUS :
     # 1. récupérer le predictor dans state (state.get("predictor"))
     # 2. s'il est absent : lever HTTPException avec le code 503 et un message utile
     # 3. sinon : renvoyer PredictionOut(**predictor.predict(livraison.model_dump()))
-    raise NotImplementedError("predict() n'est pas encore écrite")
+    #raise NotImplementedError("predict() n'est pas encore écrite")
+@app.post("/v1/predict", response_model=PredictionOut)
+def predict(livraison: Livraison):
+    predictor = state.get("predictor")
+    if predictor is None:
+        raise HTTPException(status_code=503, detail="Modèle non chargé ou indisponible.")
+        
+    # 3. On fait la prédiction et on n'oublie pas les ** pour déballer le dictionnaire
+    prediction = predictor.predict(livraison.model_dump())
+    return PredictionOut(**prediction)

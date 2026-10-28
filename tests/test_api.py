@@ -85,3 +85,35 @@ def test_modele_absent_renvoie_503():
     with TestClient(app) as client:
         state.pop("predictor", None)  # on simule un modèle non chargé
         assert post(client).status_code == 503
+
+def test_heure_24_refusee():
+    """Test 1 : Une heure de départ de 24 doit être refusée (422) car max = 23."""
+    with TestClient(app) as client:
+        # On utilise la fonction 'post' existante dans votre fichier pour modifier juste l'heure
+        response = post(client, heure_depart=24)
+        assert response.status_code == 422
+
+
+def test_alerte_coherente_avec_le_seuil():
+    """Test 2 : Vérifie que le flag 'alerte' bascule correctement selon la difficulté."""
+    # Définition des livraisons extrêmes pour forcer les résultats
+    livraison_difficile = {
+        "distance_km": 400.0, "poids_kg": 2000.0, "heure_depart": 17,
+        "pluie_mm": 50.0, "trafic_index": 9.0, "nb_arrets": 4, "type_vehicule": "camion"
+    }
+    
+    livraison_facile = {
+        "distance_km": 10.0, "poids_kg": 50.0, "heure_depart": 10,
+        "pluie_mm": 0.0, "trafic_index": 1.0, "nb_arrets": 1, "type_vehicule": "moto"
+    }
+
+    with TestClient(app) as client:
+        # Test du trajet très difficile -> alerte doit être True
+        r_difficile = client.post("/v1/predict", json=livraison_difficile)
+        assert r_difficile.status_code == 200
+        assert r_difficile.json()["alerte"] is True
+        
+        # Test du trajet très facile -> alerte doit être False
+        r_facile = client.post("/v1/predict", json=livraison_facile)
+        assert r_facile.status_code == 200
+        assert r_facile.json()["alerte"] is False
